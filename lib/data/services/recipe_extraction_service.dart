@@ -232,7 +232,7 @@ class RecipeExtractionService {
     final uniqIngredients = _dedupe(ingredientsText);
     final uniqSteps = _dedupe(stepsText);
 
-    if ((uniqIngredients.isEmpty && uniqSteps.isEmpty) || uniqIngredients.length < 3 || uniqSteps.isEmpty) return null;
+    if ((uniqIngredients.isEmpty && uniqSteps.isEmpty) || uniqIngredients.length < 4 || uniqSteps.isEmpty) return null;
 
     return Recipe(
       id: DateTime.now().millisecondsSinceEpoch.toString(),

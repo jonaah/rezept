@@ -9,7 +9,7 @@ class RecipeExtractionRepository {
       : _overrideExtractor = overrideExtractor;
 
   Future<Recipe> extract(String url) => _overrideExtractor != null
-      ? _overrideExtractor!(url)
+      ? _overrideExtractor(url)
       : _service.extractFromUrl(url);
   Recipe parseHtml(String html, {String? sourceUrl}) => _service.parseHtml(html, sourceUrl: sourceUrl);
 }

@@ -8,7 +8,7 @@ class AppRouter {
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case '/':
-        return MaterialPageRoute(builder: (_) => const MainPage(title: 'Home'));
+        return MaterialPageRoute(builder: (_) => const MainPage(title: 'Recipe'));
       case '/extract':
         return MaterialPageRoute(builder: (_) => const RecipeExtractionScreen());
       case '/recipe':

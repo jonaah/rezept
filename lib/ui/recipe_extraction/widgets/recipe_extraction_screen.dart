@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../recipe_extraction/view_model/recipe_extraction_view_model.dart';
-import 'package:cupertino_icons/cupertino_icons.dart';
 
 class RecipeExtractionScreen extends StatefulWidget {
   const RecipeExtractionScreen({super.key});
@@ -87,7 +86,7 @@ class _RecipeExtractionScreenState extends State<RecipeExtractionScreen> {
               if (r.ingredients.isNotEmpty) ...[
                 const Text('Zutaten', style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
-                ...r.ingredients.map((i) => Text('• $i')),
+                ...r.ingredients.map((i) => Text('\u2022 $i')),
                 const SizedBox(height: 16),
               ],
               if (r.steps.isNotEmpty) ...[

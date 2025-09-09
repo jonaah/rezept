@@ -42,13 +42,7 @@ class Recipe {
     List<String> ingredients = [];
     final ingRaw = json['recipeIngredient'];
     if (ingRaw is List) {
-      ingredients = ingRaw.map((e) => e.toString().trim()).where((e) => e.isNotEmpty).toList();
-    }
-
-    List<String> steps = [];
-    final instrRaw = json['recipeInstructions'];
-    if (instrRaw is List) {
-      steps = instrRaw
+      ingredients = ingRaw
           .map((e) {
             if (e is Map && e['text'] != null) return e['text'].toString();
             return e.toString();
@@ -56,8 +50,68 @@ class Recipe {
           .map((e) => e.trim())
           .where((e) => e.isNotEmpty)
           .toList();
-    } else if (instrRaw is String) {
-      steps = instrRaw.split(RegExp(r'\n+')).map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+    }
+
+    // Recursively flatten recipeInstructions into a list of step texts.
+    List<String> _extractSteps(dynamic node) {
+      final out = <String>[];
+      void collect(dynamic n) {
+        if (n == null) return;
+        if (n is String) {
+          final parts = n.split(RegExp(r'\n+')).map((e) => e.trim()).where((e) => e.isNotEmpty);
+          out.addAll(parts);
+          return;
+        }
+        if (n is List) {
+          for (final item in n) {
+            collect(item);
+          }
+          return;
+        }
+        if (n is Map) {
+          final typeRaw = n['@type']?.toString().toLowerCase();
+          // If this is a HowToSection, dive into itemListElement
+          if (typeRaw != null && typeRaw.contains('howtosection')) {
+            final children = n['itemListElement'];
+            collect(children);
+            return;
+          }
+          // If this is a HowToStep, prefer its text, fallback to name, and also collect nested children if any.
+          if (typeRaw != null && typeRaw.contains('howtostep')) {
+            final text = (n['text'] ?? n['name'])?.toString().trim();
+            if (text != null && text.isNotEmpty) out.add(text);
+            if (n.containsKey('itemListElement')) collect(n['itemListElement']);
+            return;
+          }
+          // Generic object with text or nested list
+          if (n.containsKey('text')) {
+            final t = n['text']?.toString().trim();
+            if (t != null && t.isNotEmpty) out.add(t);
+          }
+          if (n.containsKey('itemListElement')) {
+            collect(n['itemListElement']);
+          }
+          return;
+        }
+      }
+
+      collect(node);
+
+      // Deduplicate while preserving order
+      final seen = <String>{};
+      final deduped = <String>[];
+      for (final s in out) {
+        final k = s.trim();
+        if (k.isEmpty) continue;
+        if (seen.add(k.toLowerCase())) deduped.add(k);
+      }
+      return deduped;
+    }
+
+    List<String> steps = [];
+    final instrRaw = json['recipeInstructions'];
+    if (instrRaw != null) {
+      steps = _extractSteps(instrRaw);
     }
 
     Duration? parseDuration(dynamic value) {

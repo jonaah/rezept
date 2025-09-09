@@ -19,7 +19,12 @@ class RecipeStorageService {
     if (_file != null) return _file!;
     Directory dir;
     try {
-      dir = await (_dirProvider != null ? _dirProvider!() : getApplicationDocumentsDirectory());
+      final provider = _dirProvider;
+      if (provider != null) {
+        dir = await provider();
+      } else {
+        dir = await getApplicationDocumentsDirectory();
+      }
     } catch (e, st) {
       Logger.e('Falling back to temp directory for storage', e, st);
       dir = Directory.systemTemp.createTempSync('recipes');
