@@ -69,4 +69,45 @@ class RecipeExtractionViewModel extends ChangeNotifier {
     status = RecipeExtractionStatus.idle;
     notifyListeners();
   }
+
+  // ---------- Editing API ----------
+  void updateTitle(String value) {
+    final r = recipe; if (r == null) return; r.title = value; notifyListeners();
+  }
+
+  void updateDescription(String value) {
+    final r = recipe; if (r == null) return; r.description = value; notifyListeners();
+  }
+
+  void updateServings(String value) {
+    final r = recipe; if (r == null) return; r.servings = value; notifyListeners();
+  }
+
+  void updateImageUrl(String value) {
+    final r = recipe; if (r == null) return; r.imageUrl = value.isEmpty ? null : value; notifyListeners();
+  }
+
+  void addIngredient([String value = '']) {
+    final r = recipe; if (r == null) return; r.ingredients.add(value); notifyListeners();
+  }
+
+  void updateIngredient(int index, String value) {
+    final r = recipe; if (r == null) return; if (index < 0 || index >= r.ingredients.length) return; r.ingredients[index] = value; notifyListeners();
+  }
+
+  void removeIngredient(int index) {
+    final r = recipe; if (r == null) return; if (index < 0 || index >= r.ingredients.length) return; r.ingredients.removeAt(index); notifyListeners();
+  }
+
+  void addStep([String value = '']) {
+    final r = recipe; if (r == null) return; r.steps.add(value); notifyListeners();
+  }
+
+  void updateStep(int index, String value) {
+    final r = recipe; if (r == null) return; if (index < 0 || index >= r.steps.length) return; r.steps[index] = value; notifyListeners();
+  }
+
+  void removeStep(int index) {
+    final r = recipe; if (r == null) return; if (index < 0 || index >= r.steps.length) return; r.steps.removeAt(index); notifyListeners();
+  }
 }

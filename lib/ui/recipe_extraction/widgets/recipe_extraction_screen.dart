@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../recipe_extraction/view_model/recipe_extraction_view_model.dart';
+import '../../shared/recipe_editor.dart';
 
 class RecipeExtractionScreen extends StatefulWidget {
   const RecipeExtractionScreen({super.key});
@@ -54,53 +55,19 @@ class _RecipeExtractionScreenState extends State<RecipeExtractionScreen> {
       case RecipeExtractionStatus.success:
         final r = _vm.recipe!;
         return SingleChildScrollView(
-          key: const ValueKey('result'),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (r.imageUrl != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(r.imageUrl!, height: 180, width: double.infinity, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const SizedBox()),
-                  ),
-                ),
-              Text(r.title, style: Theme.of(context).textTheme.headlineSmall),
-              if (r.servings != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.person_2, size: 14, color: Colors.grey),
-                      const SizedBox(width: 4),
-                      Text(r.servings!, style: const TextStyle(fontStyle: FontStyle.italic, fontSize: 13, color: Colors.grey)),
-                    ],
-                  ),
-                ),
-              if (r.description != null && r.description!.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8, bottom: 16),
-                  child: Text(r.description!),
-                ),
-              if (r.ingredients.isNotEmpty) ...[
-                const Text('Zutaten', style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                ...r.ingredients.map((i) => Text('\u2022 $i')),
-                const SizedBox(height: 16),
-              ],
-              if (r.steps.isNotEmpty) ...[
-                const Text('Schritte', style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                ...r.steps.asMap().entries.map((e) => Padding(
-                      padding: const EdgeInsets.only(bottom: 4),
-                      child: Text('${e.key + 1}. ${e.value}'),
-                    )),
-              ],
-              const SizedBox(height: 16),
-              if (r.totalTime != null) Text('Gesamtzeit: ${r.totalTime!.inMinutes} Minuten'),
-              if (r.sourceUrl != null) Text('Quelle: ${r.sourceUrl}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
-            ],
+          key: ValueKey('result-${r.id}'),
+          child: RecipeEditor(
+            recipe: r,
+            onTitleChanged: _vm.updateTitle,
+            onDescriptionChanged: _vm.updateDescription,
+            onServingsChanged: _vm.updateServings,
+            onImageUrlChanged: _vm.updateImageUrl,
+            onAddIngredient: _vm.addIngredient,
+            onRemoveIngredient: _vm.removeIngredient,
+            onUpdateIngredient: _vm.updateIngredient,
+            onAddStep: _vm.addStep,
+            onRemoveStep: _vm.removeStep,
+            onUpdateStep: _vm.updateStep,
           ),
         );
     }

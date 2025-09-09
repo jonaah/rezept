@@ -53,7 +53,7 @@ class Recipe {
     }
 
     // Recursively flatten recipeInstructions into a list of step texts.
-    List<String> _extractSteps(dynamic node) {
+    List<String> extractSteps(dynamic node) {
       final out = <String>[];
       void collect(dynamic n) {
         if (n == null) return;
@@ -111,7 +111,7 @@ class Recipe {
     List<String> steps = [];
     final instrRaw = json['recipeInstructions'];
     if (instrRaw != null) {
-      steps = _extractSteps(instrRaw);
+      steps = extractSteps(instrRaw);
     }
 
     Duration? parseDuration(dynamic value) {
