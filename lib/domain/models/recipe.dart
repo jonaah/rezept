@@ -8,6 +8,8 @@ class Recipe {
   List<String> ingredients;
   List<String> steps;
   String? imageUrl;
+  // Local filesystem path to a cached, compressed image for offline use.
+  String? imagePath;
   Duration? prepTime;
   Duration? cookTime;
   DateTime createdAt;
@@ -21,6 +23,7 @@ class Recipe {
     List<String>? ingredients,
     List<String>? steps,
     this.imageUrl,
+    this.imagePath,
     this.prepTime,
     this.cookTime,
     DateTime? createdAt,
@@ -163,6 +166,7 @@ class Recipe {
         'ingredients': ingredients,
         'steps': steps,
         'imageUrl': imageUrl,
+        'imagePath': imagePath,
         'prepTimeMinutes': prepTime?.inMinutes,
         'cookTimeMinutes': cookTime?.inMinutes,
         'createdAt': createdAt.toIso8601String(),
@@ -177,6 +181,7 @@ class Recipe {
         ingredients: (json['ingredients'] as List?)?.map((e) => e.toString()).toList() ?? <String>[],
         steps: (json['steps'] as List?)?.map((e) => e.toString()).toList() ?? <String>[],
         imageUrl: json['imageUrl']?.toString(),
+        imagePath: json['imagePath']?.toString(),
         prepTime: _minsToDuration(json['prepTimeMinutes']),
         cookTime: _minsToDuration(json['cookTimeMinutes']),
         createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? '') ?? DateTime.now(),
@@ -197,6 +202,7 @@ class Recipe {
     List<String>? ingredients,
     List<String>? steps,
     String? imageUrl,
+    String? imagePath,
     Duration? prepTime,
     Duration? cookTime,
     String? sourceUrl,
@@ -208,6 +214,7 @@ class Recipe {
         ingredients: ingredients ?? List<String>.from(this.ingredients),
         steps: steps ?? List<String>.from(this.steps),
         imageUrl: imageUrl ?? this.imageUrl,
+        imagePath: imagePath ?? this.imagePath,
         prepTime: prepTime ?? this.prepTime,
         cookTime: cookTime ?? this.cookTime,
         createdAt: createdAt,

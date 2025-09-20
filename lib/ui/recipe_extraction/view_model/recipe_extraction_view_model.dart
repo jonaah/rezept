@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
+import 'dart:io';
 import '../../../data/repositories/recipe_extraction_repository.dart';
 import '../../../data/services/recipe_extraction_service.dart';
 import '../../../domain/models/recipe.dart';
 import '../../../utils/logger.dart';
 import '../../../data/repositories/recipe_repository.dart';
+import '../../../data/services/image_cache_service.dart';
 
 enum RecipeExtractionStatus { idle, loading, success, error }
 
@@ -84,7 +86,11 @@ class RecipeExtractionViewModel extends ChangeNotifier {
   }
 
   void updateImageUrl(String value) {
-    final r = recipe; if (r == null) return; r.imageUrl = value.isEmpty ? null : value; notifyListeners();
+    final r = recipe; if (r == null) return;
+    r.imageUrl = value.isEmpty ? null : value;
+    // Clear cached path if URL changed; repo will re-cache on save
+    r.imagePath = null;
+    notifyListeners();
   }
 
   void addIngredient([String value = '']) {
@@ -109,5 +115,25 @@ class RecipeExtractionViewModel extends ChangeNotifier {
 
   void removeStep(int index) {
     final r = recipe; if (r == null) return; if (index < 0 || index >= r.steps.length) return; r.steps.removeAt(index); notifyListeners();
+  }
+
+  Future<void> setLocalImage(File file) async {
+    final r = recipe; if (r == null) return;
+    try {
+      final path = await imageCacheService.cacheImageFromFile(file, r.id);
+      if (path != null) {
+        r.imagePath = path;
+        r.imageUrl = null; // prefer local image
+        notifyListeners();
+      }
+    } catch (e, st) {
+      Logger.e('Set local image failed (extraction)', e, st);
+    }
+  }
+
+  Future<void> removeImage() async {
+    final r = recipe; if (r == null) return;
+    try { await imageCacheService.deleteImageAtPath(r.imagePath); } catch (_) {}
+    r.imagePath = null; r.imageUrl = null; notifyListeners();
   }
 }

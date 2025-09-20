@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../../domain/models/recipe.dart';
 
@@ -23,7 +24,7 @@ class RecipeGridTile extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _HeaderImage(imageUrl: recipe.imageUrl),
+              _HeaderImage(imageUrl: recipe.imageUrl, imagePath: recipe.imagePath),
               Padding(
                 padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
                 child: Text(
@@ -57,23 +58,29 @@ class RecipeGridTile extends StatelessWidget {
 
 class _HeaderImage extends StatelessWidget {
   final String? imageUrl;
-  const _HeaderImage({required this.imageUrl});
+  final String? imagePath;
+  const _HeaderImage({required this.imageUrl, required this.imagePath});
 
   @override
   Widget build(BuildContext context) {
     final bg = Theme.of(context).colorScheme.surfaceContainerHighest;
+    final localFile = imagePath != null && imagePath!.isNotEmpty ? File(imagePath!) : null;
+    final hasLocal = localFile != null && localFile.existsSync();
     return AspectRatio(
       aspectRatio: 9 / 7,
       child: Stack(
         fit: StackFit.expand,
         children: [
-          imageUrl != null && imageUrl!.isNotEmpty
-              ? Image.network(
-            imageUrl!,
-            fit: BoxFit.cover,
-            errorBuilder: (ctx, err, st) => _placeholder(ctx),
-          )
-              : _placeholder(context),
+          if (hasLocal)
+            Image.file(localFile!, fit: BoxFit.cover)
+          else if (imageUrl != null && imageUrl!.isNotEmpty)
+            Image.network(
+              imageUrl!,
+              fit: BoxFit.cover,
+              errorBuilder: (ctx, err, st) => _placeholder(ctx),
+            )
+          else
+            _placeholder(context),
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(

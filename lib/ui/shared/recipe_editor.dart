@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../domain/models/recipe.dart';
 
@@ -99,21 +100,25 @@ class RecipeEditor extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final r = recipe;
+    final local = r.imagePath != null && r.imagePath!.isNotEmpty ? File(r.imagePath!) : null;
+    final hasLocal = local != null && local.existsSync();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (r.imageUrl != null && r.imageUrl!.isNotEmpty)
+        if (hasLocal || (r.imageUrl != null && r.imageUrl!.isNotEmpty))
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                r.imageUrl!,
-                height: 180,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const SizedBox(),
-              ),
+              child: hasLocal
+                  ? Image.file(local!, height: 180, width: double.infinity, fit: BoxFit.cover)
+                  : Image.network(
+                      r.imageUrl!,
+                      height: 180,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const SizedBox(),
+                    ),
             ),
           ),
         Card(
@@ -184,4 +189,3 @@ class RecipeEditor extends StatelessWidget {
     );
   }
 }
-

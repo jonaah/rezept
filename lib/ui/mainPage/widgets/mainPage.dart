@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import '../view_model/mainPageViewModel.dart';
 import 'recipe_grid_tile.dart';
 
@@ -76,31 +77,54 @@ class _MainPage extends State<MainPage> {
         backgroundColor:  Theme.of(context).colorScheme.primary,
         centerTitle: true,
         toolbarHeight: 50,
+        iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
             widget.title,
             style: const TextStyle(fontWeight: FontWeight.w900, fontStyle: FontStyle.italic, color: Colors.white),
             textAlign: TextAlign.center,
+
         ),
-        actions: [
-          IconButton(
-            tooltip: 'Rezept Extraktion',
-            onPressed: () => Navigator.of(context).pushNamed('/extract'),
-            icon: const Icon(Icons.receipt_long),
-          ),
-        ],
       ),
       body: Stack(
         children: [
           Container(
             decoration:  BoxDecoration(
               gradient: LinearGradient(
-                colors: [Theme.of(context).colorScheme.background, Theme.of(context).colorScheme.secondary],
+                colors: [Theme.of(context).colorScheme.surface, Theme.of(context).colorScheme.secondary],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
             ),
           ),
           _buildBody(),
+        ],
+      ),
+      floatingActionButton: SpeedDial(
+        icon: Icons.add,
+        activeIcon: Icons.close,
+        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.primary,
+        overlayColor: Colors.white,
+        overlayOpacity: 0.12,
+        spaceBetweenChildren: 8,
+        children: [
+          SpeedDialChild(
+            child: const Icon(Icons.link, color: Colors.white),
+            backgroundColor: Theme.of(context).colorScheme.secondary,
+            label: 'Rezept aus Internet extrahieren',
+            labelBackgroundColor: Colors.white,
+            labelStyle: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+            onTap: () => Navigator.of(context).pushNamed('/extract'),
+          ),
+          SpeedDialChild(
+            child: const Icon(Icons.create, color: Colors.white),
+            backgroundColor: Theme.of(context).colorScheme.secondary,
+            label: 'Eigenes Rezept erstellen',
+            labelBackgroundColor: Colors.white,
+            labelStyle: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+            onTap: () => Navigator.of(context).pushNamed('/create'),
+          ),
         ],
       ),
     );

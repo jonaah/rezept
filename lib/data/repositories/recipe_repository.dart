@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:io';
 
 import '../../domain/models/recipe.dart';
 import '../services/recipe_storage_service.dart';
 import '../../utils/logger.dart';
+import '../services/image_cache_service.dart';
 
 /// Repository for CRUD operations on persisted recipes.
 /// Keeps an in-memory cache and persists to disk on each mutation.
@@ -21,6 +23,12 @@ class RecipeRepository {
       _cache[r.id] = r;
     }
     _initialized = true;
+    // Prune any orphaned images on startup
+    try {
+      await imageCacheService.pruneUnusedImages(_cache.keys.toSet());
+    } catch (e, st) {
+      Logger.e('Image prune on init failed', e, st);
+    }
   }
 
   void addListener(void Function() cb) => _listeners.add(cb);
@@ -45,6 +53,26 @@ class RecipeRepository {
 
   Future<void> upsert(Recipe recipe) async {
     await init();
+    final existing = _cache[recipe.id];
+    // If image URL changed, drop old cached image.
+    if (existing != null && existing.imagePath != null && existing.imagePath!.isNotEmpty) {
+      if (existing.imageUrl != recipe.imageUrl) {
+        await imageCacheService.deleteImageAtPath(existing.imagePath);
+        recipe.imagePath = null;
+      }
+    }
+    // If a path is set but file is gone, try to re-cache from URL.
+    if (recipe.imagePath != null && recipe.imagePath!.isNotEmpty) {
+      final f = File(recipe.imagePath!);
+      if (!f.existsSync() && (recipe.imageUrl != null && recipe.imageUrl!.isNotEmpty)) {
+        await imageCacheService.ensureCachedForRecipe(recipe);
+      }
+    }
+    // Ensure local cache if we have an imageUrl but no local path yet.
+    if ((recipe.imagePath == null || recipe.imagePath!.isEmpty) && (recipe.imageUrl != null && recipe.imageUrl!.isNotEmpty)) {
+      await imageCacheService.ensureCachedForRecipe(recipe);
+    }
+
     _cache[recipe.id] = recipe;
     await _persist();
     _notify();
@@ -52,13 +80,19 @@ class RecipeRepository {
 
   Future<void> delete(String id) async {
     await init();
-    _cache.remove(id);
+    final existing = _cache.remove(id);
+    if (existing != null) {
+      await imageCacheService.deleteImageAtPath(existing.imagePath);
+    }
     await _persist();
     _notify();
   }
 
   Future<void> _persist() async {
     await _storage.saveAll(_cache.values.toList());
+    // Keep images folder clean from orphans
+    final ids = _cache.keys.toSet();
+    await imageCacheService.pruneUnusedImages(ids);
   }
 }
 

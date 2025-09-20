@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'config/app_config.dart';
 import 'routing/app_router.dart';
 import 'ui/core/themes/app_theme.dart';
-import 'data/repositories/recipe_repository.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AppConfig.init(const AppConfig(flavor: 'production', apiBaseUrl: 'https://api.example.com'));
-  await recipeRepository.init();
+  // Defer repository initialization; it lazily initializes on first use.
+  // unawaited(recipeRepository.init());
   runApp(const MyApp());
 }
 

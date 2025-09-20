@@ -22,15 +22,34 @@ class RecipeExtractionService {
     final doc = html_parser.parse(html);
 
     final jsonLd = _parseJsonLd(doc, sourceUrl: sourceUrl);
-    if (jsonLd != null) return jsonLd;
+    if (jsonLd != null) return _finalizeRecipe(jsonLd, sourceUrl: sourceUrl);
 
     final microdata = _parseMicrodata(doc, sourceUrl: sourceUrl);
-    if (microdata != null) return microdata;
+    if (microdata != null) return _finalizeRecipe(microdata, sourceUrl: sourceUrl);
 
     final advanced = _advancedHeuristicExtraction(doc, sourceUrl: sourceUrl);
-    if (advanced != null) return advanced;
+    if (advanced != null) return _finalizeRecipe(advanced, sourceUrl: sourceUrl);
 
-    return _naiveFallback(doc, sourceUrl: sourceUrl);
+    return _finalizeRecipe(_naiveFallback(doc, sourceUrl: sourceUrl), sourceUrl: sourceUrl);
+  }
+
+  Recipe _finalizeRecipe(Recipe recipe, {String? sourceUrl}) {
+    recipe.imageUrl = _resolveUrl(recipe.imageUrl, sourceUrl);
+    return recipe;
+  }
+
+  String? _resolveUrl(String? maybeUrl, String? base) {
+    if (maybeUrl == null || maybeUrl.isEmpty) return maybeUrl;
+    final u = Uri.tryParse(maybeUrl);
+    if (u == null) return null;
+    if (u.hasScheme) return maybeUrl;
+    final b = Uri.tryParse(base ?? '');
+    if (b == null) return maybeUrl;
+    try {
+      return b.resolveUri(u).toString();
+    } catch (_) {
+      return maybeUrl;
+    }
   }
 
   // ---------------- JSON-LD ----------------

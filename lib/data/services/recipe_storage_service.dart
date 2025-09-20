@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../domain/models/recipe.dart';
@@ -42,12 +43,9 @@ class RecipeStorageService {
       final file = await _getFile();
       final content = await file.readAsString();
       if (content.trim().isEmpty) return [];
-      final decoded = jsonDecode(content);
-      if (decoded is List) {
-        return decoded.map((e) => Recipe.fromJson(e as Map<String, dynamic>)).toList();
-      }
-      Logger.e('RecipeStorageService: Expected list root, got ${decoded.runtimeType}');
-      return [];
+      // Offload JSON parsing to a background isolate for large files.
+      final list = await compute(_parseRecipesFromJsonString, content);
+      return list;
     } catch (e, st) {
       Logger.e('Failed to load recipes', e, st);
       return [];
@@ -58,9 +56,25 @@ class RecipeStorageService {
     try {
       final file = await _getFile();
       final serialized = recipes.map((e) => e.toJson()).toList();
-      await file.writeAsString(jsonEncode(serialized));
+      // Offload JSON encoding to a background isolate for large payloads.
+      final jsonStr = await compute(_encodeRecipesToJsonString, serialized);
+      await file.writeAsString(jsonStr);
     } catch (e, st) {
       Logger.e('Failed to save recipes', e, st);
     }
   }
+}
+
+// Top-level helpers for compute()
+List<Recipe> _parseRecipesFromJsonString(String content) {
+  final decoded = jsonDecode(content);
+  if (decoded is List) {
+    return decoded.map((e) => Recipe.fromJson(Map<String, dynamic>.from(e as Map))).toList();
+  }
+  return <Recipe>[];
+}
+
+String _encodeRecipesToJsonString(List<dynamic> serialized) {
+  // Expecting a List<Map<String, dynamic>>; ensure JSON-encodable structures
+  return jsonEncode(serialized);
 }

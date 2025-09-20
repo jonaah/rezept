@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../view_model/recipe_view_model.dart';
 
@@ -56,6 +57,8 @@ class _RecipeScreenState extends State<RecipeScreen> {
         return const Center(child: Text('Rezept nicht gefunden.'));
       case RecipeViewStatus.ready:
         final r = _vm.recipe!;
+        final local = r.imagePath != null && r.imagePath!.isNotEmpty ? File(r.imagePath!) : null;
+        final hasLocal = local != null && local.existsSync();
         return RefreshIndicator(
           onRefresh: _vm.load,
           child: SingleChildScrollView(
@@ -64,16 +67,18 @@ class _RecipeScreenState extends State<RecipeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (r.imageUrl != null)
+                if (hasLocal || r.imageUrl != null)
                   ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      r.imageUrl!,
-                      height: 220,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const SizedBox(),
-                    ),
+                    child: hasLocal
+                        ? Image.file(local!, height: 220, width: double.infinity, fit: BoxFit.cover)
+                        : Image.network(
+                            r.imageUrl!,
+                            height: 220,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => const SizedBox(),
+                          ),
                   ),
                 const SizedBox(height: 16),
                 Text(r.title, style: Theme.of(context).textTheme.headlineSmall),
@@ -140,16 +145,21 @@ class _RecipeScreenState extends State<RecipeScreen> {
       appBar: AppBar(
         title: const Text('Rezept'),
         actions: [
-          if (_vm.status == RecipeViewStatus.ready)
+          if (_vm.status == RecipeViewStatus.ready) ...[
+            IconButton(
+              tooltip: 'Bearbeiten',
+              icon: const Icon(Icons.edit_outlined),
+              onPressed: () => Navigator.of(context).pushNamed('/edit', arguments: widget.recipeId),
+            ),
             IconButton(
               tooltip: 'Löschen',
               icon: const Icon(Icons.delete_outline),
               onPressed: _confirmDelete,
             ),
+          ],
         ],
       ),
       body: _buildBody(),
     );
   }
 }
-
