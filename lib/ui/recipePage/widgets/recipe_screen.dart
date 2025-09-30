@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../view_model/recipe_view_model.dart';
+import '../../core/themes/app_theme.dart';
 
 class RecipeScreen extends StatefulWidget {
   final String recipeId;
@@ -129,7 +130,7 @@ class _RecipeScreenState extends State<RecipeScreen> {
                   const SizedBox(height: 24),
                   Text('Quelle', style: Theme.of(context).textTheme.titleSmall),
                   const SizedBox(height: 4),
-                  Text(r.sourceUrl!, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                  Text(r.sourceUrl!, style: const TextStyle(fontSize: 12, color: Colors.black)),
                 ],
                 const SizedBox(height: 40),
               ],
@@ -143,7 +144,12 @@ class _RecipeScreenState extends State<RecipeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Rezept'),
+        title: const Text('Rezept',
+          style: TextStyle(fontWeight: FontWeight.w900, fontStyle: FontStyle.italic, color: Colors.white)),
+        centerTitle: true,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        iconTheme: const IconThemeData(color: Colors.white),
+        toolbarHeight: 50,
         actions: [
           if (_vm.status == RecipeViewStatus.ready) ...[
             IconButton(
@@ -159,7 +165,16 @@ class _RecipeScreenState extends State<RecipeScreen> {
           ],
         ],
       ),
-      body: _buildBody(),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Theme.of(context).colorScheme.surface, Theme.of(context).colorScheme.secondary],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: _buildBody(),
+      ),
     );
   }
 }

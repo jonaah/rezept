@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
-import '../ui/mainPage/widgets/mainPage.dart';
 import '../ui/recipe_extraction/widgets/recipe_extraction_screen.dart';
 import '../ui/recipePage/widgets/recipe_screen.dart';
 import '../ui/recipe_edit/widgets/add_edit_recipe_screen.dart';
+import '../ui/categories/widgets/categories_page.dart';
+import '../ui/root/home_pager.dart';
 
 /// Basic router placeholder. Replace with go_router / auto_route as needed.
 class AppRouter {
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case '/':
-        return MaterialPageRoute(builder: (_) => const MainPage(title: 'Recipe'));
+        return MaterialPageRoute(builder: (_) => const HomePager());
       case '/extract':
         return MaterialPageRoute(builder: (_) => const RecipeExtractionScreen());
       case '/create':
@@ -30,6 +31,8 @@ class AppRouter {
           );
         }
         return MaterialPageRoute(builder: (_) => RecipeScreen(recipeId: id));
+      case '/categories':
+        return MaterialPageRoute(builder: (_) => const CategoriesPage());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

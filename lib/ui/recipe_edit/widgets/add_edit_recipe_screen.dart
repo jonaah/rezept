@@ -119,6 +119,7 @@ class _AddEditRecipeScreenState extends State<AddEditRecipeScreen> {
         backgroundColor: Theme.of(context).primaryColor,
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
+        toolbarHeight: 50,
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _vm.canSave ? _save : null,

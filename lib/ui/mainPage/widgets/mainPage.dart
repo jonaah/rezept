@@ -1,9 +1,10 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import '../view_model/mainPageViewModel.dart';
 import 'recipe_grid_tile.dart';
+import 'recipe_tile_recommendation.dart';
+import 'filter_mainpage.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key, required this.title});
@@ -41,6 +42,9 @@ class _MainPage extends State<MainPage> {
       return const Center(child: Text('Keine Rezepte vorhanden'));
     }
 
+    final rec = _vm.dailyRecommendation;
+    final list = _vm.filteredRecipes;
+
     return RefreshIndicator(
       onRefresh: _vm.load,
       child: LayoutBuilder(
@@ -48,22 +52,68 @@ class _MainPage extends State<MainPage> {
           final width = constraints.maxWidth;
           int crossAxisCount = (width / 200).floor();
           if (crossAxisCount < 2) crossAxisCount = 2;
-          return GridView.builder(
-            padding: const EdgeInsets.all(12),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 0.8,
-            ),
-            itemCount: _vm.recipes.length,
-            itemBuilder: (context, index) {
-              final r = _vm.recipes[index];
-              return RecipeGridTile(
-                recipe: r,
-                onTap: () => Navigator.of(context).pushNamed('/recipe', arguments: r.id),
-              );
-            },
+          return CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              if (rec != null)
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+                  sliver: SliverToBoxAdapter(
+                    child: RecipeTileRecommendation(
+                      recipe: rec,
+                      onTap: () => Navigator.of(context).pushNamed('/recipe', arguments: rec.id),
+                    ),
+                  ),
+                ),
+              // Filter widget between recommendation and grid
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                sliver: SliverToBoxAdapter(
+                  child: FilterMainPage(
+                    query: _vm.filterQuery,
+                    onChanged: (v) => _vm.filterQuery = v,
+                  ),
+                ),
+              ),
+              if (list.isEmpty)
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  sliver: SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 32),
+                      child: Center(
+                        child: Text(
+                          'Keine Treffer für "${_vm.filterQuery}"',
+                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.grey),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                  sliver: SliverGrid(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: 0.8,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final r = list[index];
+                        return RecipeGridTile(
+                          recipe: r,
+                          onTap: () => Navigator.of(context).pushNamed('/recipe', arguments: r.id),
+                        );
+                      },
+                      childCount: list.length,
+                    ),
+                  ),
+                ),
+            ],
           );
         },
       ),
@@ -99,34 +149,7 @@ class _MainPage extends State<MainPage> {
           _buildBody(),
         ],
       ),
-      floatingActionButton: SpeedDial(
-        icon: Icons.add,
-        activeIcon: Icons.close,
-        iconTheme: const IconThemeData(color: Colors.white),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.primary,
-        overlayColor: Colors.white,
-        overlayOpacity: 0.12,
-        spaceBetweenChildren: 8,
-        children: [
-          SpeedDialChild(
-            child: const Icon(Icons.link, color: Colors.white),
-            backgroundColor: Theme.of(context).colorScheme.secondary,
-            label: 'Rezept aus Internet extrahieren',
-            labelBackgroundColor: Colors.white,
-            labelStyle: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-            onTap: () => Navigator.of(context).pushNamed('/extract'),
-          ),
-          SpeedDialChild(
-            child: const Icon(Icons.create, color: Colors.white),
-            backgroundColor: Theme.of(context).colorScheme.secondary,
-            label: 'Eigenes Rezept erstellen',
-            labelBackgroundColor: Colors.white,
-            labelStyle: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-            onTap: () => Navigator.of(context).pushNamed('/create'),
-          ),
-        ],
-      ),
+      // floatingActionButton removed; provided by HomePager
     );
   }
 }
