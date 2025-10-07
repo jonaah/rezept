@@ -1,7 +1,7 @@
 // filepath: /Users/Jonah/FlutterApps/lib/ui/root/home_pager.dart
 import 'package:flutter/material.dart';
 import 'package:rezept/ui/categories/widgets/categories_page.dart';
-import 'package:rezept/ui/mainPage/widgets/mainPage.dart';
+import 'package:rezept/ui/mainPage/widgets/mainpage.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:rezept/ui/categories/widgets/category_create_sheet.dart';
 
