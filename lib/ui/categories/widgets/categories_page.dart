@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:rezept/ui/categories/view_model/categories_view_model.dart';
 import 'package:rezept/ui/categories/widgets/category_grid_tile.dart';
+import 'package:rezept/ui/categories/widgets/category_recipes_page.dart';
+import 'package:rezept/ui/categories/widgets/category_create_sheet.dart';
 
 class CategoriesPage extends StatefulWidget {
   const CategoriesPage({super.key});
@@ -65,33 +67,40 @@ class _CategoriesPageState extends State<CategoriesPage> {
                         children: [
                           CategoryGridTile(
                             category: c,
-                            onTap: null, // No navigation specified
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => CategoryRecipesPage(category: c),
+                                ),
+                              );
+                            },
                           ),
                           Positioned(
-                            top: 4,
-                            right: 4,
+                            top: 8,
+                            right: 8,
                             child: Material(
                               color: Colors.transparent,
-                              child: PopupMenuButton<String>(
-                                icon: const Icon(Icons.more_vert, color: Colors.white),
-                                onSelected: (v) async {
-                                  if (v == 'rename') {
-                                    final name = await _promptRename(c.name);
-                                    if (name != null) await _vm.renameCategory(c, name);
-                                  } else if (v == 'delete') {
-                                    await _vm.deleteCategory(c);
+                              child: IconButton(
+                                icon: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.6),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.edit, color: Colors.white, size: 20),
+                                ),
+                                onPressed: () async {
+                                  final result = await showModalBottomSheet(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    useSafeArea: true,
+                                    builder: (ctx) => CategoryCreateSheet(category: c),
+                                  );
+                                  if (result == true || result == 'deleted') {
+                                    await _vm.load(); // Reload categories after edit or delete
                                   }
                                 },
-                                itemBuilder: (ctx) => [
-                                  PopupMenuItem(
-                                    value: 'rename',
-                                    child: const Icon(Icons.edit, color: Colors.black87),
-                                  ),
-                                  PopupMenuItem(
-                                    value: 'delete',
-                                    child: const Icon(Icons.delete_outline, color: Colors.redAccent),
-                                  ),
-                                ],
+                                tooltip: 'Bearbeiten',
                               ),
                             ),
                           ),
@@ -155,6 +164,27 @@ class _CategoriesPageState extends State<CategoriesPage> {
         actions: [
           TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Abbrechen')),
           FilledButton(onPressed: () => Navigator.of(ctx).pop(ctrl.text.trim()), child: const Text('Speichern')),
+        ],
+      ),
+    );
+  }
+
+  Future<bool?> _showDeleteConfirmDialog(String categoryName) async {
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Kategorie löschen'),
+        content: Text('Möchtest du die Kategorie "$categoryName" wirklich löschen?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Abbrechen'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.redAccent),
+            child: const Text('Löschen'),
+          ),
         ],
       ),
     );
