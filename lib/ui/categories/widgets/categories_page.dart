@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rezept/ui/categories/view_model/categories_view_model.dart';
+import 'package:rezept/ui/categories/widgets/category_grid_tile.dart';
 
 class CategoriesPage extends StatefulWidget {
   const CategoriesPage({super.key});
@@ -10,7 +11,6 @@ class CategoriesPage extends StatefulWidget {
 
 class _CategoriesPageState extends State<CategoriesPage> {
   late final CategoriesViewModel _vm;
-  final _controller = TextEditingController();
 
   @override
   void initState() {
@@ -26,8 +26,87 @@ class _CategoriesPageState extends State<CategoriesPage> {
   void dispose() {
     _vm.removeListener(_onChanged);
     _vm.dispose();
-    _controller.dispose();
     super.dispose();
+  }
+
+  Widget _buildBody() {
+    if (_vm.loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_vm.categories.isEmpty) {
+      return const Center(child: Text('Noch keine Kategorien angelegt'));
+    }
+
+    final list = _vm.categories;
+
+    return RefreshIndicator(
+      onRefresh: _vm.load,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth;
+          int crossAxisCount = (width / 200).floor();
+          if (crossAxisCount < 2) crossAxisCount = 2;
+          return CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+                sliver: SliverGrid(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 0.8,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final c = list[index];
+                      return Stack(
+                        children: [
+                          CategoryGridTile(
+                            category: c,
+                            onTap: null, // No navigation specified
+                          ),
+                          Positioned(
+                            top: 4,
+                            right: 4,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: PopupMenuButton<String>(
+                                icon: const Icon(Icons.more_vert, color: Colors.white),
+                                onSelected: (v) async {
+                                  if (v == 'rename') {
+                                    final name = await _promptRename(c.name);
+                                    if (name != null) await _vm.renameCategory(c, name);
+                                  } else if (v == 'delete') {
+                                    await _vm.deleteCategory(c);
+                                  }
+                                },
+                                itemBuilder: (ctx) => [
+                                  PopupMenuItem(
+                                    value: 'rename',
+                                    child: const Icon(Icons.edit, color: Colors.black87),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 'delete',
+                                    child: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                    childCount: list.length,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
 
   @override
@@ -55,101 +134,10 @@ class _CategoriesPageState extends State<CategoriesPage> {
               ),
             ),
           ),
-          if (_vm.loading)
-            const Center(child: CircularProgressIndicator())
-          else
-            RefreshIndicator(
-              onRefresh: _vm.load,
-              child: ListView(
-                padding: const EdgeInsets.all(12),
-                children: [
-                  Card(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                    elevation: 1,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _controller,
-                              decoration: const InputDecoration(
-                                labelText: 'Neue Kategorie',
-                                hintText: 'z.B. Pasta, Vegan, Dessert',
-                                border: OutlineInputBorder(),
-                                isDense: true,
-                              ),
-                              onSubmitted: (_) => _submit(),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          FilledButton(
-                            onPressed: _submit,
-                            child: const Text('Hinzufügen'),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  if (_vm.categories.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 32),
-                      child: Center(child: Text('Noch keine Kategorien angelegt')),
-                    )
-                  else
-                    ..._vm.categories.map((c) => Card(
-                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          child: ExpansionTile(
-                            title: Text(c.name, style: Theme.of(context).textTheme.titleMedium),
-                            childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                            trailing: PopupMenuButton<String>(
-                              onSelected: (v) async {
-                                if (v == 'rename') {
-                                  final name = await _promptRename(c.name);
-                                  if (name != null) await _vm.renameCategory(c, name);
-                                } else if (v == 'delete') {
-                                  await _vm.deleteCategory(c);
-                                }
-                              },
-                              itemBuilder: (ctx) => const [
-                                PopupMenuItem(value: 'rename', child: Text('Umbenennen')),
-                                PopupMenuItem(value: 'delete', child: Text('Löschen')),
-                              ],
-                            ),
-                            children: [
-                              if (_vm.recipes.isEmpty)
-                                const Padding(
-                                  padding: EdgeInsets.all(12),
-                                  child: Text('Keine Rezepte zum Zuweisen'),
-                                )
-                              else
-                                ..._vm.recipes.map((r) => CheckboxListTile(
-                                      value: _vm.isAssigned(c, r),
-                                      onChanged: (_) => _vm.toggleAssignment(c, r),
-                                      title: Text(r.title),
-                                      secondary: const Icon(Icons.restaurant_menu_outlined),
-                                      controlAffinity: ListTileControlAffinity.leading,
-                                    )),
-                            ],
-                          ),
-                        )),
-                ],
-              ),
-            ),
+          _buildBody(),
         ],
       ),
     );
-  }
-
-  void _submit() {
-    final name = _controller.text.trim();
-    if (name.isEmpty) return;
-    _vm.addCategory(name);
-    _controller.clear();
-    setState(() {});
   }
 
   Future<String?> _promptRename(String current) async {

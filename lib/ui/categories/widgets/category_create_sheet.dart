@@ -7,6 +7,7 @@ import 'package:rezept/data/repositories/category_repository.dart';
 import 'package:rezept/data/repositories/recipe_repository.dart';
 import 'package:rezept/domain/models/category.dart';
 import 'package:rezept/domain/models/recipe.dart';
+import 'package:icons_flutter/icons_flutter.dart';
 
 class CategoryCreateSheet extends StatefulWidget {
   const CategoryCreateSheet({super.key});
@@ -34,7 +35,7 @@ class _CategoryCreateSheetState extends State<CategoryCreateSheet> {
   final _icons = const <({String key, String label, IconData icon})>[
     (key: 'vegi', label: 'Vegi', icon: Icons.eco_outlined),
     (key: 'fleisch', label: 'Fleisch', icon: Icons.set_meal_outlined),
-    (key: 'fisch', label: 'Fisch', icon: Icons.lunch_dining_outlined),
+    (key: 'fisch', label: 'Fisch', icon : MaterialCommunityIcons.fishbowl_outline),
     (key: 'süss', label: 'Süss', icon: Icons.cake_outlined),
     (key: 'drink', label: 'Drink', icon: Icons.local_drink_outlined),
     (key: 'andere', label: 'Andere', icon: Icons.category_outlined),

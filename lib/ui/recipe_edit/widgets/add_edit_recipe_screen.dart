@@ -78,14 +78,18 @@ class _AddEditRecipeScreenState extends State<AddEditRecipeScreen> {
                 children: [
                   ElevatedButton.icon(
                     onPressed: _pickImage,
-                    icon: const Icon(Icons.photo_library_outlined),
+                    icon: const Icon(Icons.photo_library_outlined, color: Colors.white,),
                     label: const Text('Bild auswählen'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
+                      foregroundColor: Colors.white,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   TextButton.icon(
                     onPressed: (r.imagePath != null || (r.imageUrl != null && r.imageUrl!.isNotEmpty)) ? _vm.removeImage : null,
-                    icon: const Icon(Icons.delete_outline),
-                    label: const Text('Bild entfernen'),
+                    icon: const Icon(Icons.delete_outline, color: Colors.white,),
+                    label: const Text('Bild entfernen', style: TextStyle(color: Colors.white),),
                   ),
                 ],
               ),
@@ -132,7 +136,7 @@ class _AddEditRecipeScreenState extends State<AddEditRecipeScreen> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Theme.of(context).colorScheme.surface,
+                  Theme.of(context).colorScheme.primary,
                   Theme.of(context).colorScheme.secondary,
                 ],
                 begin: Alignment.topCenter,
