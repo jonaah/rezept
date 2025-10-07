@@ -18,7 +18,7 @@ class RecipeHeaderImage extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           if (hasLocal)
-            Image.file(localFile!, fit: BoxFit.cover)
+            Image.file(localFile, fit: BoxFit.cover)
           else if (imageUrl != null && imageUrl!.isNotEmpty)
             Image.network(
               imageUrl!,
@@ -35,7 +35,7 @@ class RecipeHeaderImage extends StatelessWidget {
                 colors: [
                   Colors.transparent,
                   bg.withOpacity(0.0),
-                  bg.withOpacity(0.7),
+                  bg.withOpacity(0.8),
                   bg,
                 ],
                 stops: const [0.0, 0.7, 0.85, 1.0],

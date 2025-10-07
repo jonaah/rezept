@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import '../view_model/mainPageViewModel.dart';
+import '../view_model/mainPage_view_model.dart';
 import 'recipe_grid_tile.dart';
 import 'recipe_tile_recommendation.dart';
 import 'filter_mainpage.dart';

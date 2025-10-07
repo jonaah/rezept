@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../view_model/recipe_view_model.dart';
-import '../../core/themes/app_theme.dart';
 
 class RecipeScreen extends StatefulWidget {
   final String recipeId;
@@ -72,7 +71,7 @@ class _RecipeScreenState extends State<RecipeScreen> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: hasLocal
-                        ? Image.file(local!, height: 220, width: double.infinity, fit: BoxFit.cover)
+                        ? Image.file(local, height: 220, width: double.infinity, fit: BoxFit.cover)
                         : Image.network(
                             r.imageUrl!,
                             height: 220,

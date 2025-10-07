@@ -60,4 +60,4 @@ class CategoryRepository {
   }
 }
 
-late final CategoryRepository categoryRepository = CategoryRepository(CategoryStorageService());
+ final CategoryRepository categoryRepository = CategoryRepository(CategoryStorageService());

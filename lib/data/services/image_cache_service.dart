@@ -139,4 +139,4 @@ class ImageCacheService {
   }
 }
 
-late final ImageCacheService imageCacheService = ImageCacheService();
+final ImageCacheService imageCacheService = ImageCacheService();

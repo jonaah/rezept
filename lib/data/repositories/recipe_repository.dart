@@ -95,5 +95,4 @@ class RecipeRepository {
     await imageCacheService.pruneUnusedImages(ids);
   }
 }
-
-late final RecipeRepository recipeRepository = RecipeRepository(RecipeStorageService());
+final RecipeRepository recipeRepository = RecipeRepository(RecipeStorageService());

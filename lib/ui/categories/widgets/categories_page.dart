@@ -149,44 +149,5 @@ class _CategoriesPageState extends State<CategoriesPage> {
     );
   }
 
-  Future<String?> _promptRename(String current) async {
-    final ctrl = TextEditingController(text: current);
-    return showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Kategorie umbenennen'),
-        content: TextField(
-          controller: ctrl,
-          decoration: const InputDecoration(border: OutlineInputBorder(), isDense: true),
-          autofocus: true,
-          onSubmitted: (_) => Navigator.of(ctx).pop(ctrl.text.trim()),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Abbrechen')),
-          FilledButton(onPressed: () => Navigator.of(ctx).pop(ctrl.text.trim()), child: const Text('Speichern')),
-        ],
-      ),
-    );
-  }
 
-  Future<bool?> _showDeleteConfirmDialog(String categoryName) async {
-    return showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Kategorie löschen'),
-        content: Text('Möchtest du die Kategorie "$categoryName" wirklich löschen?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Abbrechen'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            style: FilledButton.styleFrom(backgroundColor: Colors.redAccent),
-            child: const Text('Löschen'),
-          ),
-        ],
-      ),
-    );
-  }
 }

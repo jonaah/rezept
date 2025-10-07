@@ -6,8 +6,6 @@ class AppTheme {
   static ThemeData light() {
     const primaryColor = Color(0xFF6B705C);
     const secondaryColor = Color(0xFFCB997E);
-    const backgroundColor = Color(0xFFB7B7A4);
-    const cardBackgroundColor = Color(0xFFFFE8D6);
 
     return ThemeData(
       colorScheme: ColorScheme(
@@ -16,7 +14,6 @@ class AppTheme {
         onPrimary: Colors.white,
         secondary: secondaryColor,
         onSecondary: Colors.white,
-        background: backgroundColor,
         onSurfaceVariant: Color(0xFF3B3535),
         surface: Colors.white,
         surfaceContainerHighest: Color(0xFFFFE8D6),
