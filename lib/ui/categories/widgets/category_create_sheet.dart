@@ -7,8 +7,8 @@ import 'package:rezept/data/repositories/category_repository.dart';
 import 'package:rezept/data/repositories/recipe_repository.dart';
 import 'package:rezept/domain/models/category.dart';
 import 'package:rezept/domain/models/recipe.dart';
-import 'package:icons_flutter/icons_flutter.dart';
 import 'package:rezept/ui/mainPage/widgets/recipe_grid_tile.dart';
+import 'package:rezept/utils/category_icons.dart';
 
 class CategoryCreateSheet extends StatefulWidget {
   final Category? category; // null = create mode, otherwise edit mode
@@ -35,15 +35,6 @@ class _CategoryCreateSheetState extends State<CategoryCreateSheet> {
 
   bool _loading = true;
   bool _saving = false;
-
-  final _icons = const <({String key, String label, IconData icon})>[
-    (key: 'vegi', label: 'Vegi', icon: Icons.eco_outlined),
-    (key: 'fleisch', label: 'Fleisch', icon: Icons.set_meal_outlined),
-    (key: 'fisch', label: 'Fisch', icon : MaterialCommunityIcons.fishbowl_outline),
-    (key: 'süss', label: 'Süss', icon: Icons.cake_outlined),
-    (key: 'drink', label: 'Drink', icon: Icons.local_drink_outlined),
-    (key: 'andere', label: 'Andere', icon: Icons.category_outlined),
-  ];
 
   final _colors = const <int>[
     0xFFF44336, // red
@@ -100,6 +91,44 @@ class _CategoryCreateSheetState extends State<CategoryCreateSheet> {
     if (xfile != null) {
       setState(() => _imagePath = xfile.path);
     }
+  }
+
+  Future<void> _showIconPicker() async {
+    final selected = await showDialog<({String key, String label, IconData icon})?>(
+      context: context,
+      builder: (ctx) => _IconPickerDialog(
+        currentIconKey: _iconKey,
+        icons: additionalCategoryIcons,
+      ),
+    );
+
+    if (selected != null) {
+      setState(() => _iconKey = selected.key);
+    }
+  }
+
+  IconData? _getSelectedIcon() {
+    // Check main icons first
+    for (final icon in mainCategoryIcons) {
+      if (icon.key == _iconKey) return icon.icon;
+    }
+    // Check additional icons
+    for (final icon in additionalCategoryIcons) {
+      if (icon.key == _iconKey) return icon.icon;
+    }
+    return null;
+  }
+
+  String? _getSelectedIconLabel() {
+    // Check main icons first
+    for (final icon in mainCategoryIcons) {
+      if (icon.key == _iconKey) return icon.label;
+    }
+    // Check additional icons
+    for (final icon in additionalCategoryIcons) {
+      if (icon.key == _iconKey) return icon.label;
+    }
+    return null;
   }
 
   Future<void> _save() async {
@@ -270,22 +299,55 @@ class _CategoryCreateSheetState extends State<CategoryCreateSheet> {
                                 Wrap(
                                   spacing: 8,
                                   runSpacing: 8,
-                                  children: _icons.map((opt) {
-                                    final selected = _iconKey == opt.key;
-                                    return ChoiceChip(
+                                  children: [
+                                    ...mainCategoryIcons.map((opt) {
+                                      final selected = _iconKey == opt.key;
+                                      return ChoiceChip(
+                                        label: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [Icon(opt.icon, size: 18, color: Colors.black), const SizedBox(width: 6), Text(opt.label, style: const TextStyle(color: Colors.black))],
+                                        ),
+                                        selected: selected,
+                                        selectedColor: Theme.of(context).colorScheme.primary,
+                                        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                                        onSelected: (_) => setState(() {
+                                          _iconKey = (_iconKey == opt.key) ? null : opt.key;
+                                        }),
+                                        side: BorderSide(color: selected ? Colors.green : Colors.black),
+                                      );
+                                    }),
+                                    // "Weitere Icons" button
+                                    ActionChip(
                                       label: Row(
                                         mainAxisSize: MainAxisSize.min,
-                                        children: [Icon(opt.icon, size: 18, color: Colors.black), const SizedBox(width: 6), Text(opt.label, style: const TextStyle(color: Colors.black))],
+                                        children: [
+                                          Icon(
+                                            _getSelectedIcon() != null && !mainCategoryIcons.any((i) => i.key == _iconKey)
+                                                ? _getSelectedIcon()!
+                                                : Icons.add_circle_outline,
+                                            size: 18,
+                                            color: Colors.black,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            _getSelectedIconLabel() != null && !mainCategoryIcons.any((i) => i.key == _iconKey)
+                                                ? _getSelectedIconLabel()!
+                                                : 'Weitere...',
+                                            style: const TextStyle(color: Colors.black),
+                                          ),
+                                        ],
                                       ),
-                                      selected: selected,
-                                      selectedColor: Theme.of(context).colorScheme.primary,
-                                      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-                                      onSelected: (_) => setState(() {
-                                        _iconKey = (_iconKey == opt.key) ? null : opt.key;
-                                      }),
-                                      side: BorderSide(color: selected ? Colors.green : Colors.black),
-                                    );
-                                  }).toList(),
+                                      backgroundColor: _iconKey != null && !mainCategoryIcons.any((i) => i.key == _iconKey)
+                                          ? Theme.of(context).colorScheme.primary
+                                          : Theme.of(context).colorScheme.surfaceContainerHighest,
+                                      side: BorderSide(
+                                        color: _iconKey != null && !mainCategoryIcons.any((i) => i.key == _iconKey)
+                                            ? Colors.green
+                                            : Colors.black,
+                                      ),
+                                      onPressed: _showIconPicker,
+                                    ),
+                                  ],
                                 ),
                                 const SizedBox(height: 16),
                                 Text('Bild', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white)),
@@ -548,5 +610,199 @@ class _CategoryCreateSheetState extends State<CategoryCreateSheet> {
           ),
         ),
       );
+  }
+}
+
+// Icon Picker Dialog
+class _IconPickerDialog extends StatefulWidget {
+  final String? currentIconKey;
+  final List<({String key, String label, IconData icon})> icons;
+
+  const _IconPickerDialog({
+    required this.currentIconKey,
+    required this.icons,
+  });
+
+  @override
+  State<_IconPickerDialog> createState() => _IconPickerDialogState();
+}
+
+class _IconPickerDialogState extends State<_IconPickerDialog> {
+  final _searchCtrl = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  List<({String key, String label, IconData icon})> get _filteredIcons {
+    if (_searchQuery.trim().isEmpty) return widget.icons;
+    final q = _searchQuery.toLowerCase();
+    return widget.icons.where((icon) {
+      return icon.label.toLowerCase().contains(q) ||
+          icon.key.toLowerCase().contains(q);
+    }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 600, maxHeight: 700),
+        child: Column(
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Icon auswählen',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+            ),
+
+            // Search bar
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: TextField(
+                controller: _searchCtrl,
+                onChanged: (v) => setState(() => _searchQuery = v),
+                decoration: InputDecoration(
+                  hintText: 'Icons durchsuchen...',
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () {
+                            _searchCtrl.clear();
+                            setState(() => _searchQuery = '');
+                          },
+                        )
+                      : null,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+
+            // Icon grid
+            Expanded(
+              child: _filteredIcons.isEmpty
+                  ? Center(
+                      child: Text(
+                        'Keine Icons gefunden für "$_searchQuery"',
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: Colors.grey,
+                        ),
+                      ),
+                    )
+                  : GridView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 4,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        childAspectRatio: 1,
+                      ),
+                      itemCount: _filteredIcons.length,
+                      itemBuilder: (context, index) {
+                        final icon = _filteredIcons[index];
+                        final isSelected = icon.key == widget.currentIconKey;
+
+                        return InkWell(
+                          onTap: () => Navigator.of(context).pop(icon),
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? Theme.of(context).colorScheme.primaryContainer
+                                  : Theme.of(context).colorScheme.surfaceContainerHighest,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isSelected
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Colors.grey.shade300,
+                                width: isSelected ? 2 : 1,
+                              ),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  icon.icon,
+                                  size: 32,
+                                  color: isSelected
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Colors.black87,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  icon.label,
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    fontSize: 10,
+                                    color: isSelected
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Colors.black87,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+
+            // Footer
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(null),
+                    child: const Text('Abbrechen'),
+                  ),
+                  if (widget.currentIconKey != null)
+                    TextButton.icon(
+                      onPressed: () {
+                        setState(() {});
+                        Navigator.of(context).pop((key: '', label: '', icon: Icons.clear));
+                      },
+                      icon: const Icon(Icons.clear),
+                      label: const Text('Kein Icon'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.redAccent,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

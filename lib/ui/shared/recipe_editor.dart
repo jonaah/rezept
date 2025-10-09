@@ -127,7 +127,7 @@ class RecipeEditor extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: hasLocal
-                  ? Image.file(local!, height: 180, width: double.infinity, fit: BoxFit.cover)
+                  ? Image.file(local, height: 180, width: double.infinity, fit: BoxFit.cover)
                   : Image.network(
                       r.imageUrl!,
                       height: 180,

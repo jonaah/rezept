@@ -1,32 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:icons_flutter/icons_flutter.dart';
 import 'package:rezept/domain/models/category.dart';
+import 'package:rezept/utils/category_icons.dart';
 
 class CategoryGridTile extends StatelessWidget {
   final Category category;
   final VoidCallback? onTap;
   const CategoryGridTile({super.key, required this.category, this.onTap});
-
-  IconData _iconForKey(String? key) {
-    switch (key) {
-      case 'vegi':
-        return Icons.eco_outlined;
-      case 'fleisch':
-        return Icons.set_meal_outlined;
-      case 'fisch':
-        return MaterialCommunityIcons.fishbowl_outline;
-      case 'süss':
-        return Icons.cake_outlined;
-      case 'drink':
-        return Icons.local_drink_outlined;
-      case 'andere':
-        return Icons.category_outlined;
-      default:
-        return Icons.folder_outlined;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +33,7 @@ class CategoryGridTile extends StatelessWidget {
                   fit: StackFit.expand,
                   children: [
                     if (hasImage)
-                      Image.file(File(img!), fit: BoxFit.cover)
+                      Image.file(File(img), fit: BoxFit.cover)
                     else
                       Container(color: colorValue != null ? Color(colorValue) : Theme.of(context).colorScheme.surfaceContainerHighest),
                     // Gradient overlay for better text contrast near the bottom
@@ -74,7 +55,7 @@ class CategoryGridTile extends StatelessWidget {
                     if (!hasImage)
                       Center(
                         child: Icon(
-                          _iconForKey(category.iconKey),
+                          getIconForKey(category.iconKey),
                           size: 48,
                           color: Colors.white,
                         ),
