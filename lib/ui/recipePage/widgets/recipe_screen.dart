@@ -68,17 +68,23 @@ class _RecipeScreenState extends State<RecipeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (hasLocal || r.imageUrl != null)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: hasLocal
-                        ? Image.file(local, height: 220, width: double.infinity, fit: BoxFit.cover)
-                        : Image.network(
-                            r.imageUrl!,
-                            height: 220,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const SizedBox(),
-                          ),
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.white, width: 3),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: hasLocal
+                          ? Image.file(local, height: 220, width: double.infinity, fit: BoxFit.cover)
+                          : Image.network(
+                              r.imageUrl!,
+                              height: 220,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const SizedBox(),
+                            ),
+                    ),
                   ),
                 const SizedBox(height: 16),
                 Text(r.title, style: Theme.of(context).textTheme.headlineSmall),

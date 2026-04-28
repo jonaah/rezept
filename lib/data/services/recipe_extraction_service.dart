@@ -14,7 +14,8 @@ class RecipeExtractionService {
     if (response.statusCode != 200) {
       throw Exception('HTTP ${response.statusCode}');
     }
-    return parseHtml(response.body, sourceUrl: url);
+    final String decodedHtml = utf8.decode(response.bodyBytes, allowMalformed: true);
+    return parseHtml(decodedHtml, sourceUrl: url);
   }
 
   /// Parse HTML via multi-stage strategy: JSON-LD -> Microdata -> Heuristic -> Naive.
