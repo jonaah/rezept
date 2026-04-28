@@ -124,17 +124,23 @@ class RecipeEditor extends StatelessWidget {
         if (hasLocal || (r.imageUrl != null && r.imageUrl!.isNotEmpty))
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: hasLocal
-                  ? Image.file(local, height: 180, width: double.infinity, fit: BoxFit.cover)
-                  : Image.network(
-                      r.imageUrl!,
-                      height: 180,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const SizedBox(),
-                    ),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.white, width: 3),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(6), // Slightly smaller to account for border
+                child: hasLocal
+                    ? Image.file(local, height: 180, width: double.infinity, fit: BoxFit.cover)
+                    : Image.network(
+                        r.imageUrl!,
+                        height: 180,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const SizedBox(),
+                      ),
+              ),
             ),
           ),
         SizedBox(
@@ -178,6 +184,7 @@ class RecipeEditor extends StatelessWidget {
                         key: ValueKey('servings-${r.id}'),
                         initialValue: r.servings ?? '',
                         onChanged: onServingsChanged,
+                        style: const TextStyle(color: Colors.white),
                         decoration: const InputDecoration(
                             labelText: 'Portionen / Menge',
                             labelStyle: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
@@ -199,6 +206,7 @@ class RecipeEditor extends StatelessWidget {
                         key: ValueKey('image-${r.id}'),
                         initialValue: r.imageUrl ?? '',
                         onChanged: onImageUrlChanged,
+                        style: const TextStyle(color: Colors.white),
                         decoration: const InputDecoration(
                             labelText: 'Bild-URL',
                             labelStyle: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
@@ -222,6 +230,7 @@ class RecipeEditor extends StatelessWidget {
                   initialValue: r.description ?? '',
                   onChanged: onDescriptionChanged,
                   maxLines: null,
+                  style: const TextStyle(color: Colors.white),
                   decoration: const InputDecoration(
                       labelText: 'Beschreibung',
                       labelStyle: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
